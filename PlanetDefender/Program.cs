@@ -3,30 +3,75 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;// для таймера
 
 namespace PlanetDefender
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Gamefield() // настраиваем ширину/высоту/название окна
         {
-            Point[,] square = new Point[4, 2]; //создаем массив из объектов типо точка
+            Console.Title = "Планетозащитник 2017";
+            Console.WindowWidth = 120;
+            Console.BufferWidth = 120;
+            Console.WindowHeight = 40;
+            Console.BufferHeight = 40;
+            Console.CursorVisible = false; // скрываем противную мигающую каретку
+        }
 
-            for (int y = 0; y < 2; y++) //инициализируем каждый элемент массива координатами
+        static void Main()
+        {
+            Gamefield(); //отрисовка игрового поля
+
+            //Attacker enemy = new Attacker(32); //задаем координаты для врага
+
+            List<Attacker> aList = new List<Attacker>();
+            int attackerCount = 0;
+
+            Stopwatch spawnTimer = new Stopwatch(); // таймер для задержки перед появлением звездочек
+            spawnTimer.Start();
+            int elapsedTime = 0;
+
+            int shiftX = 4;
+
+            while (true)
             {
-                for (int x = 0; x < 4; x++)
+                if (attackerCount < 5)                                     //всего звезд на экране
                 {
-                    square[x, y] = new Point(x, y);
+                    elapsedTime = (int)spawnTimer.ElapsedMilliseconds;  //записываем время со старта
+                    int spawn = 500;               //задаем случайный интервал
+                    if (elapsedTime > spawn)                            // через который будет появляться звездочка
+                    {
+                        //int random = r.Next(5, 75);                     // в случайной координате по х
+
+                        Attacker enemy = new Attacker(shiftX);        //создаем звездочку с заданными координатами и скоростью
+
+                        shiftX = shiftX + 4;
+                        aList.Add(enemy);                                   //добавляем звездочку в список
+                       attackerCount++;                                    // увеличиваем отслеживаемое количество звезд на экране
+                        spawnTimer.Restart();                           //сбрасываем таймер
+                    }
                 }
-            }
 
-            foreach (Point p in square) //выводим каждую точку массива на экран
-            {
-                Console.SetCursorPosition(p.x, p.y);
-                Console.Write("#");
-            }
+                foreach (Attacker enemy in aList)
+                {
+                    enemy.Draw(); //отрисовываем врага по заданным координатам
 
-            Console.ReadLine();
+                    enemy.InitOldCoord(); //записываем координаты для стирания
+
+                    enemy.Move(); // даем врагу новые координаты
+                } 
+               
+                System.Threading.Thread.Sleep(1000); // задержка
+
+                foreach (Attacker enemy in aList)
+                {
+                    enemy.EraseOldCoord(); //затираем по координатам для стирания
+                }
+               
+                                
+            }
+         
         }
     }
 }
