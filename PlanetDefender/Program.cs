@@ -14,61 +14,99 @@ namespace PlanetDefender
             Console.Title = "Планетозащитник 2017";
             Console.WindowWidth = 120;
             Console.BufferWidth = 120;
-            Console.WindowHeight = 40;
-            Console.BufferHeight = 40;
+            Console.WindowHeight = 45;
+            Console.BufferHeight = 45;
             Console.CursorVisible = false; // скрываем противную мигающую каретку
+        }
+
+        static void DrawBorder() // рисуем границы игрового поля
+        {
+            for (int y = 3; y < 42; y++)
+            {
+                Console.SetCursorPosition(4, y);
+                Console.ForegroundColor = ConsoleColor.DarkCyan;
+                Console.Write('[');
+            }
+            for (int y = 3; y < 42; y++)
+            {
+                Console.SetCursorPosition(116, y);
+                Console.ForegroundColor = ConsoleColor.DarkCyan;
+                Console.Write(']');
+            }
         }
 
         static void Main()
         {
-            Gamefield(); //отрисовка игрового поля
+            Gamefield(); //отрисовка 
+            DrawBorder(); //отрисовка границ 
 
-            //Attacker enemy = new Attacker(32); //задаем координаты для врага
+            List<Attacker> aList = new List<Attacker>();    //список, содержащий массивы врагов
+            int attackerCount = 0;                          //количество врагов на экране
+            int shiftX = 5;                                 // сдвиг врага на координату по х
+            Random enemyX = new Random();                   //случайный множитель сдвига
 
-            List<Attacker> aList = new List<Attacker>();
-            int attackerCount = 0;
+            // таймер для задержки перед появлением врага
+            Stopwatch spawnTimer = new Stopwatch(); spawnTimer.Start(); int elapsedTime = 0;
 
-            Stopwatch spawnTimer = new Stopwatch(); // таймер для задержки перед появлением звездочек
-            spawnTimer.Start();
-            int elapsedTime = 0;
+            //таймер для задержки падения врага
+            Stopwatch dropTimer = new Stopwatch(); int elapsedTime1=0; dropTimer.Start();
+            int tick = 1000; //скорость падения
 
-            int shiftX = 4;
+            Player p = new Player(35, 40); //создаем игрока
+            ConsoleKeyInfo userKey; //отслеживаемая нажатая клавиша
 
             while (true)
             {
                 if (attackerCount < 5)                                     //всего звезд на экране
                 {
                     elapsedTime = (int)spawnTimer.ElapsedMilliseconds;  //записываем время со старта
-                    int spawn = 500;               //задаем случайный интервал
+                    int spawn = 2000;               //задаем случайный интервал
                     if (elapsedTime > spawn)                            // через который будет появляться звездочка
                     {
-                        //int random = r.Next(5, 75);                     // в случайной координате по х
-
-                        Attacker enemy = new Attacker(shiftX);        //создаем звездочку с заданными координатами и скоростью
-
-                        shiftX = shiftX + 4;
+                       Attacker enemy = new Attacker(shiftX*enemyX.Next(1,22));        //создаем врага в одном из специально выбранных случайных мест
+                       
                         aList.Add(enemy);                                   //добавляем звездочку в список
-                       attackerCount++;                                    // увеличиваем отслеживаемое количество звезд на экране
+                        attackerCount++;                                    // увеличиваем отслеживаемое количество звезд на экране
                         spawnTimer.Restart();                           //сбрасываем таймер
                     }
                 }
 
-                foreach (Attacker enemy in aList)
+                if (Console.KeyAvailable)               // Если клавиша нажата
                 {
-                    enemy.Draw(); //отрисовываем врага по заданным координатам
+                    userKey = Console.ReadKey(true);    // мы передаем информацию о нажатой клавише в нашу переменную
 
-                    enemy.InitOldCoord(); //записываем координаты для стирания
+                    switch (userKey.Key)                // и в зависимости от того, какая клавиша нажата
+                    {
+                        case ConsoleKey.LeftArrow:      //движемся налево
+                            p.MoveLeft();
+                            break;
 
-                    enemy.Move(); // даем врагу новые координаты
-                } 
-               
-                System.Threading.Thread.Sleep(1000); // задержка
+                        case ConsoleKey.RightArrow:     //движемся направо
+                            p.MoveRight();
+                            break;
 
-                foreach (Attacker enemy in aList)
-                {
-                    enemy.EraseOldCoord(); //затираем по координатам для стирания
+                        //case ConsoleKey.Escape:         // Если жмем выход
+                        //    gameRunning = false;
+                        //    break;
+                    }
                 }
-               
+
+                p.DrawPlayer(); //рисуем игрока
+
+                elapsedTime1 = (int)dropTimer.ElapsedMilliseconds; //записываем прошедшее время в переменную
+                if (elapsedTime1 > tick)            // если времени прошло достаточно
+                {
+                    foreach (Attacker enemy in aList)
+                    {
+                        enemy.EraseOldCoord(); //затираем по координатам для стирания
+                        enemy.Draw(); //отрисовываем врага по заданным координатам
+                        enemy.InitOldCoord(); //записываем координаты для стирания
+                        enemy.Move(); // даем врагу новые координаты
+                    }
+                    dropTimer.Restart();
+
+                }
+                     
                                 
             }
          

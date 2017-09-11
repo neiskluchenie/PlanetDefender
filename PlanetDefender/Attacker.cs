@@ -41,6 +41,7 @@ namespace PlanetDefender
                 if (p.y<35)
                 {
                     Console.SetCursorPosition(p.x, p.y);
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.Write("#");
                 }
                 
