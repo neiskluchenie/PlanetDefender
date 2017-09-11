@@ -55,6 +55,11 @@ namespace PlanetDefender
             Player p = new Player(35, 40); //создаем игрока
             ConsoleKeyInfo userKey; //отслеживаемая нажатая клавиша
 
+            Point projectile = new Point(p.locationX + 2, p.locationY - 1);
+            Stopwatch projectileTimer = new Stopwatch(); int elapsedTime2 = 0; projectileTimer.Start();
+            int speed = 500; //скорость падения
+            int oldProjectile=0;
+
             while (true)
             {
                 if (attackerCount < 5)                                     //всего звезд на экране
@@ -92,7 +97,8 @@ namespace PlanetDefender
                 }
 
                 p.DrawPlayer(); //рисуем игрока
-
+                
+                //враг
                 elapsedTime1 = (int)dropTimer.ElapsedMilliseconds; //записываем прошедшее время в переменную
                 if (elapsedTime1 > tick)            // если времени прошло достаточно
                 {
@@ -104,10 +110,30 @@ namespace PlanetDefender
                         enemy.Move(); // даем врагу новые координаты
                     }
                     dropTimer.Restart();
-
                 }
-                     
-                                
+
+                //снаряд
+                elapsedTime2 = (int)projectileTimer.ElapsedMilliseconds; //записываем прошедшее время в переменную
+                if (elapsedTime2 > speed)            // если времени прошло достаточно
+                {
+                    if (projectile.y>4)
+                    {
+                        Console.SetCursorPosition(projectile.x, oldProjectile); //мы затираем старую позицию
+                        Console.Write(" ");
+
+                        Console.SetCursorPosition(projectile.x, projectile.y); // и рисуем на новых координатах
+                        Console.ForegroundColor = ConsoleColor.DarkCyan;
+                        Console.Write("*");
+
+                        oldProjectile = projectile.y;
+
+                        projectile.y--;
+
+                        
+                    }
+
+                    projectileTimer.Restart();
+                }
             }
          
         }
